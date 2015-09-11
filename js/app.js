@@ -3,7 +3,7 @@
     var map;
 
     // Make the initMap function global as required by the Google API callback
-    window.initMap = function(){
+    var initMap = function(){
         // The coordinates for Washington DC
         var latlng = {
             'lat': 38.8993488,
@@ -15,6 +15,8 @@
             'zoom': 13
         });
     };
+
+    initMap();
 
 
 })();
