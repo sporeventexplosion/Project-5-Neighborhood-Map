@@ -8,10 +8,19 @@
     </head>
     <body>
         <div id="map"></div>
+        <div class="sidebar">
+            <div class="location-list" data-bind="foreach: locations">
+                <div class="location">
+                    <div data-bind="text: name" class="location-name"></div>
+                    <div data-bind="text: address" class="location-address"></div>
+                </div>
+            </div>
+        </div>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsySWF2HBML_-RlkEI_A6cASD-54uvHO4"></script>
         <script src="js/lib/oauth-signature.min.js"></script>
         <script src="js/lib/jquery-2.1.4.min.js"></script>
+        <script src="js/lib/knockout-3.3.0.js"></script>
         <script src="js/app.js"></script>
     </body>
 </html>

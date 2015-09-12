@@ -1,6 +1,7 @@
 (function(){
 
     var map;
+    var locations = []; // Does not need to be observable as an observable array will be later created from this array
 
     // Make the initMap function global as required by the Google API callback
     var initMap = function(){
@@ -12,7 +13,8 @@
 
         map = new google.maps.Map(document.getElementById('map'), {
             'center': latlng,
-            'zoom': 13
+            'zoom': 13,
+            'disableDefaultUI': true
         });
     };
 
@@ -35,6 +37,14 @@
     };
 
     var yelpUrl = 'http://api.yelp.com/v2/search';
+
+    // The model for locations displayed
+
+    var MapViewModel = function(){
+
+        this.locations = ko.observableArray(locations);
+
+    };
 
     var getYelpListings = function(){
 
@@ -59,7 +69,20 @@
             'dataType': 'jsonp',
             'jsonpCallback': 'yelpCallback',
             'success': function(data) {
-                // TODO: show results on page
+                for (var i = 0; i < data.businesses.length; i++) {
+                    var business = data.businesses[i];
+
+                    // Change the data to fit our needs
+                    business.address = business.location.display_address[0] + ', ' + business.location.display_address[1]; // Full address
+                    business.latlng = {
+                        'lat': business.location.coordinate.latitude,
+                        'lng': business.location.coordinate.longitude
+                    }
+
+                    locations.push(business);
+                }
+
+                ko.applyBindings(new MapViewModel());
             }
         });
     };
