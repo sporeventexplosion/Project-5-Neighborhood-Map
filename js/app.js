@@ -51,7 +51,6 @@
 
         // Generate the OAuth signature required by Yelp using bettiolo/oauth-signature-js
         params.oauth_signature = window.gd = oauthSignature.generate('GET', yelpUrl, params, yelpCredentials.oauth_consumer_secret, yelpCredentials.oauth_token_secret);
-        console.log(params);
 
         $.ajax({
             'url': yelpUrl,
