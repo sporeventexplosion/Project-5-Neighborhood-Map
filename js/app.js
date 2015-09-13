@@ -31,13 +31,72 @@
         return result;
     };
 
-    var showMarker = function (argument) {
-        // body...
-    }
+    var infoWindowContents = {
+        'init': function(){
+            this.content = $('<div>').addClass('infowindow');
 
-    var sanitizeHtml = function(str) {
-        return str.replace(/&/g, '&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            this.name = $('<div>').addClass('infowindow-name').appendTo(this.content);
+
+            this.ratingStars = $('<img>').addClass('infowindow-stars');
+            this.reviewCount = $('<span>');
+            this.rating = $('<div>')
+                .append(this.ratingStars)
+                .append(this.reviewCount)
+                .addClass('infowindow-rating').appendTo(this.content);
+            this.image = $('<img>').addClass('infowindow-image').attr('alt', 'Yelp image').appendTo(this.content);
+            $('<div>').addClass('infowindow-review-title').text('Review Snippet').appendTo(this.content);
+            this.reviewSnippet = $('<div>').appendTo(this.content);
+            this.yelpLink = $('<a>').appendTo(this.content);
+
+            this.wikiLink = $('<a>').attr('href', '#').appendTo(this.content);
+
+            $('<div>').text(' Correctness of Wikipedia links cannot be guaranteed due to technical limitations').appendTo(this.content);
+        },
+        'get': function(location){
+            this.name.text(location.name);
+
+            this.ratingStars.attr('src', location.rating_img_url).attr('alt', location.rating + ' stars');
+            this.reviewCount.text(location.review_count + ' reviews on Yelp');
+            this.image.attr('src', location.image_url);
+            this.reviewSnippet.text(location.snippet_text);
+            this.yelpLink.text('Information about ' + location.name + ' on Yelp').attr('href', location.url);
+
+            // Remove old event listeners using off
+            this.wikiLink.text('Wikipedia page on ' + location.name).off('click').click(function(){
+                openWikiPage(location);
+            });
+
+            // Return the DOM node in the jQuery element
+            return this.content.get(0);
+        }
     };
+
+    infoWindowContents.init();
+
+    var openWikiPage = function (location) {
+        $.ajax({
+            'url': 'http://en.wikipedia.org/w/api.php',
+            'dataType': 'jsonp',
+            'data': {
+                'action': 'opensearch',
+                'search': location.name
+            },
+            'success': function(data){
+                typeof data[3][0] === 'string' ? window.open(data[3][0], '_self') : alert('Wikipedia articles for this location cannot be found'); // If there is a first link in the response, open it
+            }
+        });
+    };
+
+
+
+
+
+    var showInfoWindow = function (location) {
+        // Dynamically populate the info window with Yelp results
+
+        infoWindow.setContent(infoWindowContents.get(location));
+        infoWindow.open(map, location.marker.marker);
+    }
 
     // Separate the credentials from the request parameters for cleaner, easier to maintain code
     var yelpCredentials = {
@@ -61,12 +120,14 @@
         this.marker = new google.maps.Marker({
             'position': business.latlng,
             'map': map,
-            'title': 'Goodas',
             'icon': this.image
         });
 
         var self = this;
 
+        this.marker.addListener('click', function(){
+            showInfoWindow(business);
+        });
         this.marker.addListener('mouseover', function(){
             self.marker.setIcon(self.hoverImage);
         });
@@ -87,6 +148,10 @@
         size: new google.maps.Size(22, 40),
         origin: new google.maps.Point(0, 0),
         anchor: new google.maps.Point(11, 40)
+    };
+
+    Marker.prototype.openInfoWindow = function(){
+        google.maps.event.trigger(this.marker, 'click');
     };
 
     var getYelpListings = function(){
@@ -117,6 +182,7 @@
 
                     // Change the data to fit our needs
                     business.address = business.location.display_address[0] + ', ' + business.location.display_address[1]; // Full address
+                    business.image_url = business.image_url.replace('ms', 'l');
                     business.latlng = {
                         'lat': business.location.coordinate.latitude,
                         'lng': business.location.coordinate.longitude

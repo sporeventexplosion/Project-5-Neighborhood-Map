@@ -53,3 +53,37 @@ body {
 .location-address {
     font-size: 0.8em;
 }
+
+.infowindow {
+    padding: 0.6em;
+    max-width: 32em;
+}
+
+.infowindow-name {
+    font-size: 1.4em;
+    font-weight: bold;
+}
+
+.infowindow-rating {
+    display: block;
+    font-size: 1.2em;
+}
+
+.infowindow-stars {
+    display: inline;
+    font-size;
+}
+
+.infowindow-image {
+    max-width: 100%!important; /* this needs to override the Google-set style declaring a max-width of none */
+}
+
+.infowindow-review-title {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.infowindow a {
+    display: block;
+    padding: 0.8em 0;
+}
