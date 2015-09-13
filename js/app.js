@@ -46,6 +46,39 @@
 
     };
 
+    var Marker = function(business){
+        this.business = business;
+        this.marker = new google.maps.Marker({
+            'position': business.latlng,
+            'map': map,
+            'title': 'Goodas',
+            'icon': this.image
+        });
+
+        var self = this;
+
+        this.marker.addListener('mouseover', function(){
+            self.marker.setIcon(self.hoverImage);
+        });
+        this.marker.addListener('mouseout', function(){
+            self.marker.setIcon(self.image);
+        });
+    };
+
+    Marker.prototype.image = {
+        url: 'assets/pointer.png',
+        size: new google.maps.Size(22, 40),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(11, 40)
+    };
+
+    Marker.prototype.hoverImage = {
+        url: 'assets/pointer-mouseover.png',
+        size: new google.maps.Size(22, 40),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(11, 40)
+    };
+
     var getYelpListings = function(){
 
         var params = {
@@ -60,7 +93,7 @@
         };
 
         // Generate the OAuth signature required by Yelp using bettiolo/oauth-signature-js
-        params.oauth_signature = window.gd = oauthSignature.generate('GET', yelpUrl, params, yelpCredentials.oauth_consumer_secret, yelpCredentials.oauth_token_secret);
+        params.oauth_signature = oauthSignature.generate('GET', yelpUrl, params, yelpCredentials.oauth_consumer_secret, yelpCredentials.oauth_token_secret);
 
         $.ajax({
             'url': yelpUrl,
@@ -77,7 +110,8 @@
                     business.latlng = {
                         'lat': business.location.coordinate.latitude,
                         'lng': business.location.coordinate.longitude
-                    }
+                    },
+                    business.marker = new Marker(business);
 
                     locations.push(business);
                 }
