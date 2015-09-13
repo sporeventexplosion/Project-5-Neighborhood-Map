@@ -8,12 +8,29 @@
     </head>
     <body>
         <div id="map"></div>
-        <div class="sidebar">
-            <div class="location-list" data-bind="foreach: locations">
-                <div class="location" data-bind="click: marker.openInfoWindow">
-                    <div data-bind="text: name" class="location-name"></div>
-                    <div data-bind="text: address" class="location-address"></div>
+        <div class="hamburger-padded hoverable" data-bind="click: controlsActive(true)">
+            <div class="hamburger"></div>
+        </div>
+        <div class="controls" data-bind="css: { 'controls-active': controlsActive() }">
+            <div class="exit-hamburger-padded hoverable" data-bind="click: controlsActive(false)">
+                <div class="hamburger"></div>
+            </div>
+            <input class="searchbox" placeholder="Search" data-bind="textInput: searchStr">
+            <div class="sidebar">
+                <div class="location-list" data-bind="foreach: searchResults">
+                    <div class="location hoverable" data-bind="click: function(){$parent.controlsActive(false); marker.openInfoWindow()}">
+                        <div data-bind="text: name" class="location-name"></div>
+                        <div data-bind="text: address" class="location-address"></div>
+                    </div>
                 </div>
+            </div>
+        </div>
+        <div class="zoombutton-container">
+            <div class="zoombutton-padded hoverable" data-bind="click: zoomIn">
+                <div class="zoombutton zoombutton-zoomin"></div>
+            </div>
+            <div class="zoombutton-padded hoverable" data-bind="click: zoomOut">
+                <div class="zoombutton zoombutton-zoomout"></div>
             </div>
         </div>
         <meta name="viewport" content="width=device-width, initial-scale=1">

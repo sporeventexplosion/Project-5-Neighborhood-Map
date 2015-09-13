@@ -38,12 +38,7 @@ body {
 .location {
     padding: 0.8em;
     border-bottom: 1px solid #ddd;
-    transition: background-color 0.2s;
     cursor: pointer;
-}
-
-.location:hover {
-    background-color: #eee;
 }
 
 .location-name {
@@ -86,4 +81,110 @@ body {
 .infowindow a {
     display: block;
     padding: 0.8em 0;
+}
+
+.searchbox {
+    position: absolute;
+    left: 2em;
+    top: 2em;
+    padding: 10px 16px;
+    font-size: 16px;
+    width: 25em;
+    outline: none;
+    border: none;
+    box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.125);
+}
+
+.zoombutton-container {
+    position: absolute;
+    bottom: 5em;
+    background-color: #fff;
+    left: 2em;
+    box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.125);
+}
+
+.zoombutton-padded {
+    padding: 4px;
+}
+
+.zoombutton {
+    width: 32px;
+    height: 32px;
+    background-image: url('../assets/zoom-icons.png');
+}
+
+.zoombutton-zoomout {
+    background-position: bottom;
+}
+
+.hamburger-padded {
+    display: none;
+}
+
+.hoverable:hover {
+    background-color: #eee;
+}
+
+.hoverable {
+    transition: background-color 0.2s;
+}
+
+@media screen and (max-width: 960px) {
+    .controls {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        transform: translate(-100%, 0);
+        transition: transform 500ms;
+        z-index: 2;
+    }
+    .sidebar {
+        width: 100%;
+        position: initial;
+    }
+
+    .searchbox {
+        position: initial;
+        width: 100%;
+    }
+
+    .controls-active {
+        transform: translate(0, 0);
+    }
+
+    #map {
+        width: 100%;
+    }
+
+    .hamburger-padded {
+        display: block;
+        padding: 4px;
+        position: absolute;
+        top: 3em;
+        left: 2em;
+        background-color: #fff;
+
+        box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.125);
+    }
+
+    .exit-hamburger-padded {
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding: 3px;
+        background-color: #fff;
+    }
+
+    .hamburger {
+        width: 32px;
+        height: 32px;
+        background-image: url('../assets/hamburger.png');
+    }
+
+}
+
+@media screen and (max-height: 640px) {
+    .zoombutton-container {
+        bottom: 3em;
+    }
 }

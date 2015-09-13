@@ -119,7 +119,32 @@
 
     var MapViewModel = function(){
 
+        var self = this;
+
+        this.controlsActive = ko.observable(false);
+
         this.locations = ko.observableArray(locations);
+        this.searchStr = ko.observable('');
+        this.searchResults = ko.computed(function(){
+            return ko.utils.arrayFilter(this.locations(), function(location){
+                if (location.name.toLowerCase().indexOf(self.searchStr().toLowerCase()) !== -1){
+                    // Changed the visibility based on search results
+                    location.marker.marker.setMap(map)
+                    return true;
+                } else {
+                    location.marker.marker.setMap(null);
+                    return false;
+                }
+            });
+        }, this);
+
+        this.zoomIn = function(){
+            map.setZoom(map.getZoom() + 1);
+        };
+
+        this.zoomOut = function(){
+            map.setZoom(map.getZoom() - 1);
+        };
 
     };
 
@@ -147,7 +172,6 @@
         this.openInfoWindow = function(){
             self.focused = true;
             self.focus();
-            console.log(self);
             showInfoWindow(location);
         };
     };
