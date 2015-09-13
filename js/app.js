@@ -1,10 +1,9 @@
 (function(){
 
     var map;
-    var locations = []; // Does not need to be observable as an observable array will be later created from this array
+    var locations = []; // Does not need to be observable array as an observable array will be later created from this array
     var infoWindow;
 
-    // Make the initMap function global as required by the Google API callback
     var initMap = function(){
         // The coordinates for Washington DC
         var latlng = {
@@ -19,6 +18,14 @@
         });
 
         infoWindow = new google.maps.InfoWindow();
+
+        infoWindow.addListener('closeclick', function(){
+            // Make sure errors are not thrown if the info window is somehow displayed without a currentLocation
+            if (typeof infoWindow.currentLocation !== 'undefined'){
+                infoWindow.currentLocation.marker.focused = false;
+                infoWindow.currentLocation.marker.unfocus();
+            }
+        });
     };
 
     // Function for generating a nonce (not cryptographically secure)
@@ -92,10 +99,10 @@
 
 
     var showInfoWindow = function (location) {
-        // Dynamically populate the info window with Yelp results
-
         infoWindow.setContent(infoWindowContents.get(location));
         infoWindow.open(map, location.marker.marker);
+
+        infoWindow.currentLocation = location;
     }
 
     // Separate the credentials from the request parameters for cleaner, easier to maintain code
@@ -116,24 +123,33 @@
 
     };
 
-    var Marker = function(business){
+    var Marker = function(location){
         this.marker = new google.maps.Marker({
-            'position': business.latlng,
+            'position': location.latlng,
             'map': map,
             'icon': this.image
         });
 
         var self = this;
 
+        this.focused = false;
+
         this.marker.addListener('click', function(){
-            showInfoWindow(business);
+            unfocusAllMarkers();
+            self.openInfoWindow();
         });
         this.marker.addListener('mouseover', function(){
-            self.marker.setIcon(self.hoverImage);
+            self.focused || self.focus();
         });
         this.marker.addListener('mouseout', function(){
-            self.marker.setIcon(self.image);
+            self.focused || self.unfocus();
         });
+        this.openInfoWindow = function(){
+            self.focused = true;
+            self.focus();
+            console.log(self);
+            showInfoWindow(location);
+        };
     };
 
     Marker.prototype.image = {
@@ -143,6 +159,14 @@
         anchor: new google.maps.Point(11, 40)
     };
 
+    Marker.prototype.focus = function(){
+        this.marker.setIcon(this.hoverImage);
+    };
+
+    Marker.prototype.unfocus = function(){
+        this.marker.setIcon(this.image);
+    };
+
     Marker.prototype.hoverImage = {
         url: 'assets/pointer-mouseover.png',
         size: new google.maps.Size(22, 40),
@@ -150,9 +174,13 @@
         anchor: new google.maps.Point(11, 40)
     };
 
-    Marker.prototype.openInfoWindow = function(){
-        google.maps.event.trigger(this.marker, 'click');
-    };
+    // Function to use when a different marker is clicked directly, changing the info box and not triggering 'closeclick',
+    // In such a case, it is needed to manually reset the focus of markers
+    var unfocusAllMarkers = function(){
+        for (var i = 0; i < locations.length; i++){
+            locations[i].marker.focused && (locations[i].marker.focused = false, locations[i].marker.unfocus());
+        }
+    }
 
     var getYelpListings = function(){
 
