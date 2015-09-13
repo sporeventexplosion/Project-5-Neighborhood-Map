@@ -80,6 +80,7 @@
 
     infoWindowContents.init();
 
+    // Function for asynchronously fetching wikipedia links and opening them
     var openWikiPage = function (location) {
         $.ajax({
             'url': 'http://en.wikipedia.org/w/api.php',
@@ -93,10 +94,6 @@
             }
         });
     };
-
-
-
-
 
     var showInfoWindow = function (location) {
         infoWindow.setContent(infoWindowContents.get(location));
@@ -121,6 +118,7 @@
 
         var self = this;
 
+        // Whether the control div is slid out (used at lower viewport widths)
         this.controlsActive = ko.observable(false);
 
         this.locations = ko.observableArray(locations);
@@ -138,6 +136,7 @@
             });
         }, this);
 
+        // Zoom functions used by the zoom buttons in the HTML
         this.zoomIn = function(){
             map.setZoom(map.getZoom() + 1);
         };
@@ -222,6 +221,11 @@
         // Generate the OAuth signature required by Yelp using bettiolo/oauth-signature-js
         params.oauth_signature = oauthSignature.generate('GET', yelpUrl, params, yelpCredentials.oauth_consumer_secret, yelpCredentials.oauth_token_secret);
 
+        // Timeout for if JSONP request takes too long
+        var ajaxTimeout = setTimeout(function(){
+            alert('Failed to load Yelp entries');
+        }, 10000);
+
         $.ajax({
             'url': yelpUrl,
             'data': params,
@@ -229,6 +233,8 @@
             'dataType': 'jsonp',
             'jsonpCallback': 'yelpCallback',
             'success': function(data) {
+                clearTimeout(ajaxTimeout);
+
                 for (var i = 0; i < data.businesses.length; i++) {
                     var business = data.businesses[i];
 
