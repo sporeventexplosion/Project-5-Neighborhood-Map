@@ -2,6 +2,7 @@
 
     var map;
     var locations = []; // Does not need to be observable as an observable array will be later created from this array
+    var infoWindow;
 
     // Make the initMap function global as required by the Google API callback
     var initMap = function(){
@@ -13,9 +14,11 @@
 
         map = new google.maps.Map(document.getElementById('map'), {
             'center': latlng,
-            'zoom': 14,
+            'zoom': window.innerWidth > 1400 ? 14 : 13, // Lower zoom on smaller displays
             'disableDefaultUI': true
         });
+
+        infoWindow = new google.maps.InfoWindow();
     };
 
     // Function for generating a nonce (not cryptographically secure)
@@ -26,6 +29,14 @@
             result += characters[Math.floor(Math.random()*characters.length)];
         }
         return result;
+    };
+
+    var showMarker = function (argument) {
+        // body...
+    }
+
+    var sanitizeHtml = function(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     };
 
     // Separate the credentials from the request parameters for cleaner, easier to maintain code
@@ -47,7 +58,6 @@
     };
 
     var Marker = function(business){
-        this.business = business;
         this.marker = new google.maps.Marker({
             'position': business.latlng,
             'map': map,
