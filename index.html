@@ -8,11 +8,11 @@
     </head>
     <body>
         <div id="map"></div>
-        <div class="hamburger-padded hoverable" data-bind="click: controlsActive(true)">
+        <div class="hamburger-padded hoverable" data-bind="click: toggleControls(true)">
             <div class="hamburger"></div>
         </div>
         <div class="controls" data-bind="css: { 'controls-active': controlsActive }">
-            <div class="exit-hamburger-padded hoverable" data-bind="click: controlsActive(false)">
+            <div class="exit-hamburger-padded hoverable" data-bind="click: toggleControls(false)">
                 <div class="hamburger"></div>
             </div>
             <input class="searchbox" placeholder="Search" data-bind="textInput: searchStr">

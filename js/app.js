@@ -121,6 +121,10 @@
         // Whether the control div is slid out (used at lower viewport widths)
         this.controlsActive = ko.observable(false);
 
+        this.toggleControls = function(state){
+            this.controlsActive(typeof state === 'boolean' ? state : !this.controlsActive()); // Reverse state if not specified
+        }
+
         this.locations = ko.observableArray(locations);
         this.searchStr = ko.observable('');
         this.searchResults = ko.computed(function(){
