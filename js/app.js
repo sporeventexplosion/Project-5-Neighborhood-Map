@@ -61,6 +61,13 @@
         currentLocation(location); // Change current location to update knockout infowindow bindings
         infoWindow.setContent(koInfoWindowBinding.html());
         infoWindow.open(map, location.marker.marker);
+
+        // Set the marker's animation to bounce and pause after 2100ms (3 bounces)
+        var marker = location.marker.marker;
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){
+            marker.setAnimation(null);
+        }, 2100);
     };
 
     // Separate the credentials from the request parameters for cleaner, easier to maintain code
