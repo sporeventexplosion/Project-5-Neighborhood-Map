@@ -3,9 +3,9 @@
     var map;
     var locations = []; // Does not need to be observable array as an observable array will be later created from this array
     var infoWindow;
-    var currentLocation; // Alias for the currentLocation attribute of the viewmodel
+    var currentLocation; // The current location being viewed. Equal to currentLocation attribute of the viewmodel
 
-    var koInfoWindowBinding = $('.ko-infowindow-binding'); // The hidden infowindow bindings
+    var koInfoWindowBinding = $('.ko-infowindow-binding'); // Hidden Knockout bindings for the infowindow
 
     var initMap = function(){
         // The coordinates for Washington DC
@@ -16,7 +16,7 @@
 
         map = new google.maps.Map(document.getElementById('map'), {
             'center': latlng,
-            'zoom': window.innerWidth > 1400 ? 14 : 13, // Lower zoom on smaller displays
+            'zoom': window.innerWidth > 1400 ? 14 : 13, // Use a lower zoom level on smaller displays so all markers can be seen
             'disableDefaultUI': true
         });
 
@@ -41,7 +41,7 @@
         return result;
     };
 
-    // Function for asynchronously fetching wikipedia links and opening them
+    // Function for asynchronously fetching Wikipedia links and opening them
     var openWikiPage = function (location) {
         $.ajax({
             'url': 'http://en.wikipedia.org/w/api.php',
@@ -58,11 +58,11 @@
 
     var showInfoWindow = function (location) {
         infoWindow.currentLocation = location;
-        currentLocation(location); // Change current location to update knockout infowindow bindings
+        currentLocation(location); // Change current location to update Knockout infowindow bindings
         infoWindow.setContent(koInfoWindowBinding.html());
         infoWindow.open(map, location.marker.marker);
 
-        // Set the marker's animation to bounce and pause after 2100ms (3 bounces)
+        // Set the marker's animation to bounce and end the animation after 2100ms (3 bounces)
         var marker = location.marker.marker;
         marker.setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(function(){
@@ -79,8 +79,6 @@
     };
 
     var yelpUrl = 'http://api.yelp.com/v2/search';
-
-    // The model for locations displayed
 
     var MapViewModel = function(){
 
@@ -99,7 +97,7 @@
         this.searchResults = ko.computed(function(){
             return ko.utils.arrayFilter(this.locations(), function(location){
                 if (location.name.toLowerCase().indexOf(self.searchStr().toLowerCase()) !== -1){
-                    // Changed the visibility based on search results
+                    // Change visibility based on search results
                     location.marker.marker.setMap(map);
                     return true;
                 } else {
@@ -109,7 +107,7 @@
             });
         }, this);
 
-        // Zoom functions used by the zoom buttons in the HTML
+        // Functions bound to the zoom buttons in the HTML
         this.zoomIn = function(){
             map.setZoom(map.getZoom() + 1);
         };
@@ -175,8 +173,9 @@
         anchor: new google.maps.Point(11, 40)
     };
 
-    // Function to use when a different marker is clicked directly, changing the info box and not triggering 'closeclick',
-    // In such a case, it is needed to manually reset the focus of markers
+    // Function to use when a different marker or location in the sidebar is
+    //  clicked directly, changing the info box and not triggering 'closeclick',
+    // In such a case, it is needed to manually un-highlight the markers
     var unfocusAllMarkers = function(){
         for (var i = 0; i < locations.length; i++){
             locations[i].marker.focused && (locations[i].marker.focused = false, locations[i].marker.unfocus());
@@ -187,7 +186,7 @@
 
         var params = {
             'location': 'washington+dc',
-            'callback': 'yelpCallback', // Setting it before is required as this needs to be encoded into the signature
+            'callback': 'yelpCallback', // Manually set the callback as it needs to be encoded into the signature
             'oauth_consumer_key': yelpCredentials.oauth_consumer_key,
             'oauth_token': yelpCredentials.oauth_token,
             'oauth_nonce': getOauthNonce(),
@@ -216,7 +215,7 @@
                 for (var i = 0; i < data.businesses.length; i++) {
                     var business = data.businesses[i];
 
-                    // Change the data to fit our needs
+                    // Change the business object to fit our needs
                     business.address = business.location.display_address[0] + ', ' + business.location.display_address[1]; // Full address
                     business.image_url = business.image_url.replace('ms', 'l');
                     business.latlng = {
