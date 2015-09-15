@@ -3,6 +3,9 @@
     var map;
     var locations = []; // Does not need to be observable array as an observable array will be later created from this array
     var infoWindow;
+    var currentLocation; // Alias for the currentLocation attribute of the viewmodel
+
+    var koInfoWindowBinding = $('.ko-infowindow-binding'); // The hidden infowindow bindings
 
     var initMap = function(){
         // The coordinates for Washington DC
@@ -38,48 +41,6 @@
         return result;
     };
 
-    var infoWindowContents = {
-        'init': function(){
-            this.content = $('<div>').addClass('infowindow');
-
-            this.name = $('<div>').addClass('infowindow-name').appendTo(this.content);
-
-            this.ratingStars = $('<img>').addClass('infowindow-stars');
-            this.reviewCount = $('<span>');
-            this.rating = $('<div>')
-                .append(this.ratingStars)
-                .append(this.reviewCount)
-                .addClass('infowindow-rating').appendTo(this.content);
-            this.image = $('<img>').addClass('infowindow-image').attr('alt', 'Yelp image').appendTo(this.content);
-            $('<div>').addClass('infowindow-review-title').text('Review Snippet').appendTo(this.content);
-            this.reviewSnippet = $('<div>').appendTo(this.content);
-            this.yelpLink = $('<a>').appendTo(this.content);
-
-            this.wikiLink = $('<a>').attr('href', '#').appendTo(this.content);
-
-            $('<div>').text(' Correctness of Wikipedia links cannot be guaranteed due to technical limitations').appendTo(this.content);
-        },
-        'get': function(location){
-            this.name.text(location.name);
-
-            this.ratingStars.attr('src', location.rating_img_url).attr('alt', location.rating + ' stars');
-            this.reviewCount.text(location.review_count + ' reviews on Yelp');
-            this.image.attr('src', location.image_url);
-            this.reviewSnippet.text(location.snippet_text);
-            this.yelpLink.text('Information about ' + location.name + ' on Yelp').attr('href', location.url);
-
-            // Remove old event listeners using off
-            this.wikiLink.text('Wikipedia page on ' + location.name).off('click').click(function(){
-                openWikiPage(location);
-            });
-
-            // Return the DOM node in the jQuery element
-            return this.content.get(0);
-        }
-    };
-
-    infoWindowContents.init();
-
     // Function for asynchronously fetching wikipedia links and opening them
     var openWikiPage = function (location) {
         $.ajax({
@@ -96,10 +57,10 @@
     };
 
     var showInfoWindow = function (location) {
-        infoWindow.setContent(infoWindowContents.get(location));
-        infoWindow.open(map, location.marker.marker);
-
         infoWindow.currentLocation = location;
+        currentLocation(location); // Change current location to update knockout infowindow bindings
+        infoWindow.setContent(koInfoWindowBinding.html());
+        infoWindow.open(map, location.marker.marker);
     };
 
     // Separate the credentials from the request parameters for cleaner, easier to maintain code
@@ -126,6 +87,7 @@
         };
 
         this.locations = ko.observableArray(locations);
+        currentLocation = this.currentLocation = ko.observable();
         this.searchStr = ko.observable('');
         this.searchResults = ko.computed(function(){
             return ko.utils.arrayFilter(this.locations(), function(location){
@@ -255,6 +217,8 @@
                         'lng': business.location.coordinate.longitude
                     };
                     business.marker = new Marker(business);
+                    // String copy of rating used in alt text
+                    business.rating_str = business.rating.toString() + ' stars';
 
                     locations.push(business);
                 }

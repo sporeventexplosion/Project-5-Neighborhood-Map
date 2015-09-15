@@ -7,6 +7,19 @@
         <title>Neighborhood Map</title>
     </head>
     <body>
+        <!-- Hidden info window binding used by the info boxes when opened (as instructed by code reviewer) -->
+        <div class="ko-infowindow-binding">
+            <div class="infowindow" data-bind="with: currentLocation">
+                <div class="infowindow-name" data-bind="text: name"></div>
+                <div class="infowindow-rating">
+                    <img class="infowindow-stars" data-bind="attr: {src: rating_img_url, alt: rating_str}">
+                    <span><span data-bind="text: review_count"></span> reviews on Yelp</span>
+                </div>
+                <img class="infowindow-image" alt="Yelp image" data-bind="attr: {src: image_url}">
+                <div class="infowindow-review-title">Review Snippet</div>
+                <div data-bind="text: snippet_text"></div>
+                <a data-bind="attr: {href: url}">Information about <span data-bind="text: name"></span> on Yelp</a><a href="#">Wikipedia page on Greek Deli &amp; Catering</a><div> Correctness of Wikipedia links cannot be guaranteed due to technical limitations</div></div>
+        </div>
         <div id="map"></div>
         <div class="hamburger-padded hoverable" data-bind="click: toggleControls(true)">
             <div class="hamburger"></div>
