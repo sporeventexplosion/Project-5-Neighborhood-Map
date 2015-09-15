@@ -163,7 +163,6 @@
         this.focused = false;
 
         this.marker.addListener('click', function(){
-            unfocusAllMarkers();
             self.openInfoWindow();
         });
         this.marker.addListener('mouseover', function(){
@@ -173,6 +172,7 @@
             self.focused || self.unfocus();
         });
         this.openInfoWindow = function(){
+            unfocusAllMarkers();
             self.focused = true;
             self.focus();
             showInfoWindow(location);
