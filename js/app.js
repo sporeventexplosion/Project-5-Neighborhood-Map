@@ -100,7 +100,7 @@
         infoWindow.open(map, location.marker.marker);
 
         infoWindow.currentLocation = location;
-    }
+    };
 
     // Separate the credentials from the request parameters for cleaner, easier to maintain code
     var yelpCredentials = {
@@ -123,7 +123,7 @@
 
         this.toggleControls = function(state){
             this.controlsActive(typeof state === 'boolean' ? state : !this.controlsActive()); // Reverse state if not specified
-        }
+        };
 
         this.locations = ko.observableArray(locations);
         this.searchStr = ko.observable('');
@@ -131,7 +131,7 @@
             return ko.utils.arrayFilter(this.locations(), function(location){
                 if (location.name.toLowerCase().indexOf(self.searchStr().toLowerCase()) !== -1){
                     // Changed the visibility based on search results
-                    location.marker.marker.setMap(map)
+                    location.marker.marker.setMap(map);
                     return true;
                 } else {
                     location.marker.marker.setMap(null);
@@ -165,12 +165,17 @@
         this.marker.addListener('click', function(){
             self.openInfoWindow();
         });
+
         this.marker.addListener('mouseover', function(){
-            self.focused || self.focus();
+            self.focus();
         });
+
         this.marker.addListener('mouseout', function(){
-            self.focused || self.unfocus();
+            if (self.focused === false) {
+                self.unfocus();
+            }
         });
+
         this.openInfoWindow = function(){
             unfocusAllMarkers();
             self.focused = true;
@@ -207,7 +212,7 @@
         for (var i = 0; i < locations.length; i++){
             locations[i].marker.focused && (locations[i].marker.focused = false, locations[i].marker.unfocus());
         }
-    }
+    };
 
     var getYelpListings = function(){
 
@@ -248,7 +253,7 @@
                     business.latlng = {
                         'lat': business.location.coordinate.latitude,
                         'lng': business.location.coordinate.longitude
-                    },
+                    };
                     business.marker = new Marker(business);
 
                     locations.push(business);
