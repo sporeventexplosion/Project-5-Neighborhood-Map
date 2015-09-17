@@ -8,7 +8,7 @@
     </head>
     <body>
         <!-- Hidden info window binding used by the info boxes when opened (as instructed by code reviewer) -->
-        <div class="ko-infowindow-binding">
+        <script type="text/html" id="infowindow-template">
             <div class="infowindow" data-bind="with: currentLocation">
                 <div class="infowindow-name" data-bind="text: name"></div>
                 <div class="infowindow-rating">
@@ -22,7 +22,7 @@
                 <a href="#">Wikipedia page on Greek Deli &amp; Catering</a>
                 <div> Correctness of Wikipedia links cannot be guaranteed due to technical limitations</div>
             </div>
-        </div>
+        </script>
         <div id="map"></div>
         <div class="hamburger-padded hoverable" data-bind="click: toggleControls(true)">
             <div class="hamburger"></div>
