@@ -136,44 +136,49 @@
         anchor: new google.maps.Point(11, 40)
     };
 
-    var MapViewModel = function(){
+    var MapViewModel = {
+        'init': function(){
+            var self = this;
 
-        var self = this;
+            // Whether the control div is slid out (used at lower viewport widths)
+            this.controlsActive = ko.observable(false);
 
-        // Whether the control div is slid out (used at lower viewport widths)
-        this.controlsActive = ko.observable(false);
+            this.toggleControls = function(state){
+                this.controlsActive(typeof state === 'boolean' ? state : !this.controlsActive()); // Reverse state if not specified
+            };
 
-        this.toggleControls = function(state){
-            this.controlsActive(typeof state === 'boolean' ? state : !this.controlsActive()); // Reverse state if not specified
-        };
+            this.locations = ko.observableArray();
+            currentLocation = this.currentLocation = ko.observable();
+            this.searchStr = ko.observable('');
 
-        this.locations = ko.observableArray(locations);
-        currentLocation = this.currentLocation = ko.observable();
-        this.searchStr = ko.observable('');
+            this.searchResults = ko.computed(function(){
+                return ko.utils.arrayFilter(this.locations(), function(location){
+                    if (location.name.toLowerCase().indexOf(self.searchStr().toLowerCase()) !== -1){
+                        // Change visibility based on search results
+                        location.marker.marker.setMap(map);
+                        return true;
+                    } else {
+                        location.marker.marker.setMap(null);
+                        return false;
+                    }
+                });
+            }, this);
 
-        this.searchResults = ko.computed(function(){
-            return ko.utils.arrayFilter(this.locations(), function(location){
-                if (location.name.toLowerCase().indexOf(self.searchStr().toLowerCase()) !== -1){
-                    // Change visibility based on search results
-                    location.marker.marker.setMap(map);
-                    return true;
-                } else {
-                    location.marker.marker.setMap(null);
-                    return false;
-                }
-            });
-        }, this);
+            // Functions bound to the zoom buttons in the HTML
+            this.zoomIn = function(){
+                map.setZoom(map.getZoom() + 1);
+            };
 
-        // Functions bound to the zoom buttons in the HTML
-        this.zoomIn = function(){
-            map.setZoom(map.getZoom() + 1);
-        };
-
-        this.zoomOut = function(){
-            map.setZoom(map.getZoom() - 1);
-        };
-
+            this.zoomOut = function(){
+                map.setZoom(map.getZoom() - 1);
+            };
+        },
+        'insertYelpEntries': function(locations){
+            this.locations(locations);
+        }
     };
+
+    MapViewModel.init();
 
 
     // Function to use when a different marker or location in the sidebar is
@@ -214,6 +219,8 @@
             'success': function(data) {
                 clearTimeout(ajaxTimeout);
 
+                var locations = []
+
                 for (var i = 0; i < data.businesses.length; i++) {
                     var business = data.businesses[i];
 
@@ -231,7 +238,9 @@
                     locations.push(business);
                 }
 
-                ko.applyBindings(new MapViewModel());
+                MapViewModel.insertYelpEntries(locations);
+
+                ko.applyBindings(MapViewModel);
             }
         });
     };
