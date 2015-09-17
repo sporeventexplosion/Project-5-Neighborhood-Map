@@ -4,32 +4,19 @@
     var locations = []; // Does not need to be observable array as an observable array will be later created from this array
     var infoWindow;
     var currentLocation; // The current location being viewed. Equal to currentLocation attribute of the viewmodel
-
     var koInfoWindowBinding = $('.ko-infowindow-binding'); // Hidden Knockout bindings for the infowindow
 
-    var initMap = function(){
-        // The coordinates for Washington DC
-        var latlng = {
-            'lat': 38.8993488,
-            'lng': -77.0145665
-        };
-
-        map = new google.maps.Map(document.getElementById('map'), {
-            'center': latlng,
-            'zoom': window.innerWidth > 1400 ? 14 : 13, // Use a lower zoom level on smaller displays so all markers can be seen
-            'disableDefaultUI': true
-        });
-
-        infoWindow = new google.maps.InfoWindow();
-
-        infoWindow.addListener('closeclick', function(){
-            // Make sure errors are not thrown if the info window is somehow displayed without a currentLocation
-            if (typeof infoWindow.currentLocation !== 'undefined'){
-                infoWindow.currentLocation.marker.focused = false;
-                infoWindow.currentLocation.marker.unfocus();
-            }
-        });
+    // Separate the credentials from the request parameters for cleaner, easier to maintain code
+    var yelpCredentials = {
+        'oauth_consumer_key': 'GX4SzhxU7eRLahA3uHCzjg',
+        'oauth_consumer_secret': '80KyH1LU61DbspThag9cHlElFU4',
+        'oauth_token': 'C2Hnx7enF1YglJQy3hISrug3mqF6YWWd',
+        'oauth_token_secret': 'ghsYY1qX0r8M88uCDacjQN51owo'
     };
+
+    var yelpUrl = 'http://api.yelp.com/v2/search';
+
+    // Utility functions
 
     // Function for generating a nonce (not cryptographically secure)
     var getOauthNonce = function(){
@@ -56,9 +43,34 @@
         });
     };
 
+    var initMap = function(){
+        // The coordinates for Washington DC
+        var latlng = {
+            'lat': 38.8993488,
+            'lng': -77.0145665
+        };
+
+        map = new google.maps.Map(document.getElementById('map'), {
+            'center': latlng,
+            'zoom': window.innerWidth > 1400 ? 14 : 13, // Use a lower zoom level on smaller displays so all markers can be seen
+            'disableDefaultUI': true
+        });
+
+        infoWindow = new google.maps.InfoWindow();
+
+        infoWindow.addListener('closeclick', function(){
+            // Make sure errors are not thrown if the info window is somehow displayed without a currentLocation
+            if (typeof infoWindow.currentLocation !== 'undefined'){
+                infoWindow.currentLocation.marker.focused = false;
+                infoWindow.currentLocation.marker.unfocus();
+            }
+        });
+    };
+
     var showInfoWindow = function (location) {
         infoWindow.currentLocation = location;
         currentLocation(location); // Change current location to update Knockout infowindow bindings
+
         infoWindow.setContent(koInfoWindowBinding.html());
         infoWindow.open(map, location.marker.marker);
 
@@ -70,54 +82,6 @@
         }, 2100);
     };
 
-    // Separate the credentials from the request parameters for cleaner, easier to maintain code
-    var yelpCredentials = {
-        'oauth_consumer_key': 'GX4SzhxU7eRLahA3uHCzjg',
-        'oauth_consumer_secret': '80KyH1LU61DbspThag9cHlElFU4',
-        'oauth_token': 'C2Hnx7enF1YglJQy3hISrug3mqF6YWWd',
-        'oauth_token_secret': 'ghsYY1qX0r8M88uCDacjQN51owo'
-    };
-
-    var yelpUrl = 'http://api.yelp.com/v2/search';
-
-    var MapViewModel = function(){
-
-        var self = this;
-
-        // Whether the control div is slid out (used at lower viewport widths)
-        this.controlsActive = ko.observable(false);
-
-        this.toggleControls = function(state){
-            this.controlsActive(typeof state === 'boolean' ? state : !this.controlsActive()); // Reverse state if not specified
-        };
-
-        this.locations = ko.observableArray(locations);
-        currentLocation = this.currentLocation = ko.observable();
-        this.searchStr = ko.observable('');
-        this.searchResults = ko.computed(function(){
-            return ko.utils.arrayFilter(this.locations(), function(location){
-                if (location.name.toLowerCase().indexOf(self.searchStr().toLowerCase()) !== -1){
-                    // Change visibility based on search results
-                    location.marker.marker.setMap(map);
-                    return true;
-                } else {
-                    location.marker.marker.setMap(null);
-                    return false;
-                }
-            });
-        }, this);
-
-        // Functions bound to the zoom buttons in the HTML
-        this.zoomIn = function(){
-            map.setZoom(map.getZoom() + 1);
-        };
-
-        this.zoomOut = function(){
-            map.setZoom(map.getZoom() - 1);
-        };
-
-    };
-
     var Marker = function(location){
         this.marker = new google.maps.Marker({
             'position': location.latlng,
@@ -126,7 +90,6 @@
         });
 
         var self = this;
-
         this.focused = false;
 
         this.marker.addListener('click', function(){
@@ -173,6 +136,46 @@
         anchor: new google.maps.Point(11, 40)
     };
 
+    var MapViewModel = function(){
+
+        var self = this;
+
+        // Whether the control div is slid out (used at lower viewport widths)
+        this.controlsActive = ko.observable(false);
+
+        this.toggleControls = function(state){
+            this.controlsActive(typeof state === 'boolean' ? state : !this.controlsActive()); // Reverse state if not specified
+        };
+
+        this.locations = ko.observableArray(locations);
+        currentLocation = this.currentLocation = ko.observable();
+        this.searchStr = ko.observable('');
+
+        this.searchResults = ko.computed(function(){
+            return ko.utils.arrayFilter(this.locations(), function(location){
+                if (location.name.toLowerCase().indexOf(self.searchStr().toLowerCase()) !== -1){
+                    // Change visibility based on search results
+                    location.marker.marker.setMap(map);
+                    return true;
+                } else {
+                    location.marker.marker.setMap(null);
+                    return false;
+                }
+            });
+        }, this);
+
+        // Functions bound to the zoom buttons in the HTML
+        this.zoomIn = function(){
+            map.setZoom(map.getZoom() + 1);
+        };
+
+        this.zoomOut = function(){
+            map.setZoom(map.getZoom() - 1);
+        };
+
+    };
+
+
     // Function to use when a different marker or location in the sidebar is
     //  clicked directly, changing the info box and not triggering 'closeclick',
     // In such a case, it is needed to manually un-highlight the markers
@@ -183,7 +186,6 @@
     };
 
     var getYelpListings = function(){
-
         var params = {
             'location': 'washington+dc',
             'callback': 'yelpCallback', // Manually set the callback as it needs to be encoded into the signature
