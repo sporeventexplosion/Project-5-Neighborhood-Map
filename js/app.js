@@ -56,7 +56,15 @@
             'disableDefaultUI': true
         });
 
-        infoWindow = new google.maps.InfoWindow();
+        infoWindow = new google.maps.InfoWindow({
+            'content': '<div id="infowindow-container" data-bind="template: {name: \'infowindow-template\', data: currentLocation}"></div>'
+        });
+
+        var infoWindowIsBound = false;
+
+        google.maps.event.addListener(infoWindow, 'domready', function() {
+            // Code for applying viewmodel
+        });
 
         infoWindow.addListener('closeclick', function(){
             // Make sure errors are not thrown if the info window is somehow displayed without a currentLocation
@@ -219,7 +227,7 @@
             'success': function(data) {
                 clearTimeout(ajaxTimeout);
 
-                var locations = []
+                var locations = [];
 
                 for (var i = 0; i < data.businesses.length; i++) {
                     var business = data.businesses[i];
@@ -239,8 +247,6 @@
                 }
 
                 MapViewModel.insertYelpEntries(locations);
-
-                ko.applyBindings(MapViewModel);
             }
         });
     };
