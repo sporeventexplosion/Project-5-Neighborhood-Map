@@ -29,13 +29,15 @@
     };
 
     // Function for asynchronously fetching Wikipedia links and opening them
-    var openWikiPage = function (location) {
+    // It is referenced on every instance of the location objects and "this"
+    // is used to fetch the name of the location
+    var openWikiPage = function (){
         $.ajax({
             'url': 'http://en.wikipedia.org/w/api.php',
             'dataType': 'jsonp',
             'data': {
                 'action': 'opensearch',
-                'search': location.name
+                'search': this.name
             },
             'success': function(data){
                 typeof data[3][0] === 'string' ? window.open(data[3][0], '_self') : alert('Wikipedia articles for this location cannot be found'); // If there is a first link in the response, open it
@@ -64,6 +66,10 @@
 
         google.maps.event.addListener(infoWindow, 'domready', function() {
             // Code for applying viewmodel
+            if (!infoWindowIsBound) {
+                ko.applyBindings(InfoWindowViewModel, $('#infowindow-container')[0]);
+                infoWindowIsBound = true;
+            }
         });
 
         infoWindow.addListener('closeclick', function(){
@@ -79,7 +85,6 @@
         infoWindow.currentLocation = location;
         currentLocation(location); // Change current location to update Knockout infowindow bindings
 
-        infoWindow.setContent(koInfoWindowBinding.html());
         infoWindow.open(map, location.marker.marker);
 
         // Set the marker's animation to bounce and end the animation after 2100ms (3 bounces)
@@ -180,17 +185,19 @@
             this.zoomOut = function(){
                 map.setZoom(map.getZoom() - 1);
             };
-        },
-        'insertYelpEntries': function(locations){
-            this.locations(locations);
         }
     };
 
     MapViewModel.init();
 
+    // A simple viewmodel for the infowindow
+    var InfoWindowViewModel = {
+        'currentLocation': MapViewModel.currentLocation,
+    };
+
 
     // Function to use when a different marker or location in the sidebar is
-    //  clicked directly, changing the info box and not triggering 'closeclick',
+    // clicked directly, changing the info box and not triggering 'closeclick',
     // In such a case, it is needed to manually un-highlight the markers
     var unfocusAllMarkers = function(){
         for (var i = 0; i < locations.length; i++){
@@ -227,7 +234,7 @@
             'success': function(data) {
                 clearTimeout(ajaxTimeout);
 
-                var locations = [];
+                locations = [];
 
                 for (var i = 0; i < data.businesses.length; i++) {
                     var business = data.businesses[i];
@@ -242,11 +249,13 @@
                     business.marker = new Marker(business);
                     // String copy of rating used in alt text
                     business.rating_str = business.rating.toString() + ' stars';
+                    business.openWikiPage = openWikiPage;
 
                     locations.push(business);
                 }
 
-                MapViewModel.insertYelpEntries(locations);
+                MapViewModel.locations(locations);
+                ko.applyBindings(MapViewModel);
             }
         });
     };
